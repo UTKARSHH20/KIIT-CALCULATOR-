@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Suite | KIIT CALCULATOR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 500: '#3b82f6', 600: '#2563eb' },
+                        dark: { 950: '#020617', 900: '#0f172a', 800: '#1e293b' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #020617; color: #f8fafc; }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .tab-active { background-color: #2563eb; color: white; }
+        .tab-inactive { color: #94a3b8; }
+        .tab-inactive:hover { color: white; background-color: rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-dark-950/80 backdrop-blur-xl border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <a href="index.html" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <span class="font-display font-bold text-xl tracking-tight text-white">KIIT <span class="text-brand-500">CALCULATOR</span></span>
+                </a>
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="index.html" class="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-white/5">Home</a>
+                    <a href="calculator.html" class="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-white/5">Calculator</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow pt-32 pb-20 px-4">
+        <div class="max-w-4xl mx-auto text-center mb-12">
+            <h1 class="text-4xl font-display font-bold mb-4">PDF Tool Suite</h1>
+            <p class="text-slate-400">Secure, client-side PDF manipulation. No files are uploaded to any server.</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="max-w-4xl mx-auto mb-8">
+            <div class="flex justify-center bg-dark-800/50 p-1 rounded-xl inline-flex w-full md:w-auto">
+                <button onclick="switchTab('jpg2pdf')" id="tab-jpg2pdf" class="flex-1 md:flex-none px-6 py-2 rounded-lg text-sm font-medium transition-all tab-active">JPG to PDF</button>
+                <button onclick="switchTab('editor')" id="tab-editor" class="flex-1 md:flex-none px-6 py-2 rounded-lg text-sm font-medium transition-all tab-inactive">Editor</button>
+                <button onclick="switchTab('merge')" id="tab-merge" class="flex-1 md:flex-none px-6 py-2 rounded-lg text-sm font-medium transition-all tab-inactive">Merge</button>
+            </div>
+        </div>
+
+        <!-- Tool Container -->
+        <div class="max-w-4xl mx-auto glass-panel rounded-2xl p-8 min-h-[400px]">
+            
+            <!-- JPG to PDF Section -->
+            <div id="section-jpg2pdf" class="tool-section">
+                <div class="text-center border-2 border-dashed border-slate-700 rounded-xl p-12 hover:border-brand-500 transition-colors cursor-pointer bg-dark-900/50" onclick="document.getElementById('jpg-input').click()">
+                    <svg class="w-12 h-12 text-slate-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <p class="text-lg font-medium text-white">Click to upload JPG images</p>
+                    <p class="text-sm text-slate-400 mt-2">Select multiple files to combine</p>
+                    <input type="file" id="jpg-input" multiple accept="image/jpeg, image/jpg" class="hidden" onchange="handleJpgSelect(this)">
+                </div>
+                <div id="jpg-preview" class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6"></div>
+                <button onclick="convertJpgToPdf()" id="btn-convert-jpg" class="w-full mt-6 bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl transition-colors hidden shadow-lg shadow-brand-600/20">
+                    Download PDF
+                </button>
+            </div>
+
+            <!-- PDF Editor Section -->
+            <div id="section-editor" class="tool-section hidden">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Upload PDF to Annotate</label>
+                    <input type="file" id="pdf-edit-input" accept="application/pdf" class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-500/10 file:text-brand-500 hover:file:bg-brand-500/20 transition-all cursor-pointer">
+                </div>
+                
+                <div id="editor-controls" class="hidden space-y-4">
+                    <div class="bg-dark-900/50 p-4 rounded-xl border border-white/5">
+                        <h3 class="text-sm font-bold text-white mb-3">Add Annotation</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="text" id="annot-text" placeholder="Enter text..." class="bg-dark-950 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-500 text-white">
+                            <input type="number" id="annot-page" placeholder="Page (1)" min="1" class="bg-dark-950 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-500 text-white">
+                            <button onclick="addTextToPdf()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">Add Text</button>
+                        </div>
+                    </div>
+                    <iframe id="pdf-preview-frame" class="w-full h-[500px] rounded-xl border border-white/10 bg-white"></iframe>
+                    <button onclick="downloadEditedPdf()" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-brand-600/20">
+                        Download Modified PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Merge Section -->
+            <div id="section-merge" class="tool-section hidden">
+                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">PDF 1</label>
+                        <input type="file" id="merge-input-1" accept="application/pdf" class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-500/10 file:text-brand-500 hover:file:bg-brand-500/20 cursor-pointer">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">PDF 2</label>
+                        <input type="file" id="merge-input-2" accept="application/pdf" class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-500/10 file:text-brand-500 hover:file:bg-brand-500/20 cursor-pointer">
+                    </div>
+                </div>
+                <button onclick="mergePdfs()" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-brand-600/20">
+                    Merge PDFs
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // --- Tab Switching Logic ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tool-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('section-' + tabId).classList.remove('hidden');
+            
+            ['jpg2pdf', 'editor', 'merge'].forEach(id => {
+                const btn = document.getElementById('tab-' + id);
+                if (id === tabId) {
+                    btn.classList.remove('tab-inactive');
+                    btn.classList.add('tab-active');
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('tab-inactive');
+                }
+            });
+        }
+
+        // --- JPG to PDF Logic ---
+        let selectedImages = [];
+
+        function handleJpgSelect(input) {
+            const files = Array.from(input.files);
+            const previewContainer = document.getElementById('jpg-preview');
+            const convertBtn = document.getElementById('btn-convert-jpg');
+            
+            previewContainer.innerHTML = '';
+            selectedImages = [];
+
+            if (files.length > 0) {
+                convertBtn.classList.remove('hidden');
+                files.forEach(file => {
+                    if (!file.type.match('image/jpeg')) {
+                        alert('Only JPG/JPEG files are supported.');
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        selectedImages.push(e.target.result); 
+                        
+                        const imgDiv = document.createElement('div');
+                        imgDiv.className = 'relative aspect-[3/4] bg-dark-800 rounded-lg overflow-hidden border border-white/10';
+                        imgDiv.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                        previewContainer.appendChild(imgDiv);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+        }
+
+        async function convertJpgToPdf() {
+            if (selectedImages.length === 0) return;
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            selectedImages.forEach((imgData, index) => {
+                if (index > 0) doc.addPage();
+                
+                const imgProps = doc.getImageProperties(imgData);
+                const pdfWidth = doc.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                
+                doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            });
+
+            doc.save('converted-images.pdf');
+        }
+
+        // --- PDF Editor Logic ---
+        let currentPdfBytes = null;
+
+        async function handlePdfEditSelect(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            if (file.type !== 'application/pdf') {
+                alert('Please upload a valid PDF file.');
+                return;
+            }
+
+            const arrayBuffer = await file.arrayBuffer();
+            currentPdfBytes = arrayBuffer;
+
+            const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            document.getElementById('pdf-preview-frame').src = url;
+            document.getElementById('editor-controls').classList.remove('hidden');
+        }
+
+        async function addTextToPdf() {
+            if (!currentPdfBytes) return;
+
+            const text = document.getElementById('annot-text').value || 'Sample Text';
+            const pageNum = parseInt(document.getElementById('annot-page').value) || 1;
+
+            const { PDFDocument, rgb } = PDFLib;
+            const pdfDoc = await PDFDocument.load(currentPdfBytes);
+            const pages = pdfDoc.getPages();
+            
+            if (pageNum < 1 || pageNum > pages.length) {
+                alert(`Invalid page number. Document has ${pages.length} pages.`);
+                return;
+            }
+
+            const page = pages[pageNum - 1];
+            
+            page.drawText(text, {
+                x: 50,
+                y: 50,
+                size: 24,
+                color: rgb(0.95, 0.1, 0.1),
+            });
+
+            currentPdfBytes = await pdfDoc.save();
+            
+            const blob = new Blob([currentPdfBytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            document.getElementById('pdf-preview-frame').src = url;
+        }
+
+        async function downloadEditedPdf() {
+            if (!currentPdfBytes) return;
+            const blob = new Blob([currentPdfBytes], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'edited-document.pdf';
+            link.click();
+        }
+
+        // --- Merge Logic ---
+        async function mergePdfs() {
+            const file1 = document.getElementById('merge-input-1').files[0];
+            const file2 = document.getElementById('merge-input-2').files[0];
+
+            if (!file1 || !file2) {
+                alert('Please select both PDF files.');
+                return;
+            }
+
+            const { PDFDocument } = PDFLib;
+            
+            const pdf1Bytes = await file1.arrayBuffer();
+            const pdf2Bytes = await file2.arrayBuffer();
+
+            const pdf1 = await PDFDocument.load(pdf1Bytes);
+            const pdf2 = await PDFDocument.load(pdf2Bytes);
+
+            const mergedPdf = await PDFDocument.create();
+
+            const copiedPages1 = await mergedPdf.copyPages(pdf1, pdf1.getPageIndices());
+            copiedPages1.forEach((page) => mergedPdf.addPage(page));
+
+            const copiedPages2 = await mergedPdf.copyPages(pdf2, pdf2.getPageIndices());
+            copiedPages2.forEach((page) => mergedPdf.addPage(page));
+
+            const mergedPdfBytes = await mergedPdf.save();
+            
+            const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'merged-document.pdf';
+            link.click();
+        }
+    </script>
+</body>
+</html>

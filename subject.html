@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subject Viewer | KIIT OPENWIRE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        neon: '#00ff88',
+                        dark: '#050505',
+                    },
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #000; color: #00ff88; font-family: 'JetBrains Mono', monospace; }
+        .glass-panel {
+            background: rgba(0, 20, 0, 0.7);
+            border: 1px solid #00ff88;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    
+    <!-- Navbar -->
+    <nav class="border-b border-neon/30 bg-black sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="index.html" class="font-bold text-xl text-neon">> KIIT OPENWIRE</a>
+            <a href="pyq-library.html" class="text-sm hover:text-white">[ BACK_TO_LIBRARY ]</a>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-5xl mx-auto w-full p-6 md:p-12">
+        <div class="mb-12 border-b border-neon/20 pb-6">
+            <div class="text-xs text-gray-500 mb-2" id="subject-code">LOADING...</div>
+            <h1 class="text-3xl md:text-4xl font-bold text-white mb-4" id="subject-name">LOADING...</h1>
+            <div class="flex gap-4 text-sm">
+                <span class="text-neon">STATUS: UNLOCKED</span>
+                <span class="text-gray-500">SOURCE: ANONYMOUS</span>
+            </div>
+        </div>
+
+        <div class="space-y-4" id="year-list">
+            <!-- Years injected here -->
+        </div>
+    </main>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code') || 'UNKNOWN';
+        const name = urlParams.get('name') || 'Unknown Subject';
+
+        document.getElementById('subject-code').innerText = code;
+        document.getElementById('subject-name').innerText = name;
+
+        // Mock years - in real app, fetch from pyq-data.js based on code
+        const years = [2024, 2023, 2022, 2021];
+        const container = document.getElementById('year-list');
+
+        years.forEach(year => {
+            const item = document.createElement('div');
+            item.className = 'glass-panel p-4 flex items-center justify-between hover:bg-neon/5 transition-colors';
+            item.innerHTML = `
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-neon/10 flex items-center justify-center text-neon font-bold">
+                        PDF
+                    </div>
+                    <div>
+                        <div class="font-bold text-white">${year} Question Paper</div>
+                        <div class="text-xs text-gray-500">End Semester Examination</div>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button class="hidden md:block px-4 py-2 text-xs border border-neon/30 hover:border-neon text-gray-400 hover:text-neon transition-colors">
+                        VIEW_ONLINE
+                    </button>
+                    <a href="#" class="px-4 py-2 text-xs bg-neon text-black font-bold hover:bg-white transition-colors flex items-center gap-2">
+                        DOWNLOAD <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    </a>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+    </script>
+</body>
+</html>

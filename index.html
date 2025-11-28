@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIIT CALCULATOR | Academic Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 500: '#3b82f6', 600: '#2563eb' },
+                        dark: { 950: '#020617', 900: '#0f172a', 800: '#1e293b' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #020617; color: #f8fafc; }
+        .bento-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            position: relative;
+        }
+        .bento-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+        }
+        .bento-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        }
+        .hero-text-gradient {
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-brand-500/30">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-dark-950/80 backdrop-blur-xl border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <a href="index.html" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <span class="font-display font-bold text-xl tracking-tight text-white">KIIT <span class="text-brand-500">CALCULATOR</span></span>
+                </a>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="index.html" class="px-4 py-2 text-sm font-medium text-white bg-white/5 rounded-lg">Home</a>
+                    <a href="resources.html" class="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-white/5">Exam Archive</a>
+                    <a href="about.html" class="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-white/5">About</a>
+                    <a href="contact.html" class="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-white/5">Contact</a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 text-slate-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-dark-950 border-b border-white/5">
+            <div class="px-4 py-3 space-y-1">
+                <a href="index.html" class="block px-4 py-2 text-sm font-medium text-white bg-white/5 rounded-lg">Home</a>
+                <a href="resources.html" class="block px-4 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-lg">Exam Archive</a>
+                <a href="about.html" class="block px-4 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-lg">About</a>
+                <a href="contact.html" class="block px-4 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-lg">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow pt-32 pb-20 px-4">
+        <div class="max-w-7xl mx-auto">
+            
+            <!-- Header -->
+            <div class="text-center mb-16 animate-fade-in-up">
+                <h1 class="text-5xl md:text-7xl font-display font-bold tracking-tight mb-6 hero-text-gradient">
+                    Academic Intelligence.
+                </h1>
+                <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+                    The ultimate toolkit for KIIT students. Calculate GPAs, track attendance, and access resources with precision.
+                </p>
+            </div>
+
+            <!-- Bento Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-[minmax(180px,auto)]">
+                
+                <!-- Hero Card: Calculator -->
+                <a href="calculator.html" class="bento-card col-span-1 md:col-span-2 lg:col-span-2 row-span-2 p-8 flex flex-col justify-between group relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-brand-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="px-3 py-1 rounded-full bg-brand-500/10 text-brand-400 text-xs font-bold uppercase tracking-wider border border-brand-500/20">Most Popular</span>
+                        </div>
+                        <h2 class="text-4xl font-display font-bold text-white mb-2">SGPA & CGPA Calculator</h2>
+                        <p class="text-slate-400 text-lg">Precision engineered for KIIT's 7-point grading system. Dynamic and accurate.</p>
+                    </div>
+                    <div class="relative z-10 mt-8">
+                        <div class="inline-flex items-center gap-2 text-brand-400 font-bold group-hover:gap-4 transition-all">
+                            Launch Calculator <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </div>
+                    </div>
+                    <!-- Decorative BG Element -->
+                    <div class="absolute -bottom-10 -right-10 w-64 h-64 bg-brand-600/20 rounded-full blur-3xl group-hover:bg-brand-600/30 transition-colors"></div>
+                </a>
+
+                <!-- Attendance Card -->
+                <div class="bento-card col-span-1 md:col-span-1 row-span-2 p-6 flex flex-col relative">
+                    <h3 class="text-xl font-display font-bold text-white mb-4">Attendance Manager</h3>
+                    <div class="flex-grow flex flex-col items-center justify-center relative">
+                        <div class="w-40 h-40 relative">
+                            <canvas id="attendance-chart"></canvas>
+                            <div class="absolute inset-0 flex items-center justify-center flex-col">
+                                <span id="att-percentage" class="text-3xl font-bold text-white">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 space-y-3">
+                        <input type="number" id="total-classes" placeholder="Total Classes" class="w-full bg-dark-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 outline-none">
+                        <input type="number" id="attended-classes" placeholder="Attended" class="w-full bg-dark-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 outline-none">
+                        <div id="att-message" class="text-xs text-center text-slate-400 min-h-[1.5em]">Enter data to calculate</div>
+                    </div>
+                </div>
+
+                <!-- Exam Archive -->
+                <a href="resources.html" class="bento-card col-span-1 p-6 flex flex-col justify-between group hover:bg-purple-900/10 hover:border-purple-500/30">
+                    <div>
+                        <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 mb-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">Exam Archive</h3>
+                        <p class="text-sm text-slate-400 mt-1">Previous year questions & notes.</p>
+                    </div>
+                </a>
+
+                <!-- PDF Tools -->
+                <a href="pdf-tools.html" class="bento-card col-span-1 p-6 flex flex-col justify-between group hover:bg-emerald-900/10 hover:border-emerald-500/30">
+                    <div>
+                        <div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 mb-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">PDF Suite</h3>
+                        <p class="text-sm text-slate-400 mt-1">Merge, edit, and convert PDFs locally.</p>
+                    </div>
+                </a>
+
+                <!-- About -->
+                <a href="about.html" class="bento-card col-span-1 md:col-span-2 lg:col-span-1 p-6 flex items-center justify-between group">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">About Us</h3>
+                        <p class="text-sm text-slate-400">Our mission & values.</p>
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 bg-dark-900 py-12">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p class="text-slate-500 text-sm">© 2024 KIIT Calculator. Engineered for Excellence.</p>
+            <div class="flex justify-center gap-6 mt-4 text-sm text-slate-600">
+                <a href="#" class="hover:text-slate-400">Privacy Policy</a>
+                <a href="#" class="hover:text-slate-400">Terms of Service</a>
+                <a href="contact.html" class="hover:text-slate-400">Support</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/attendance.js"></script>
+</body>
+</html>

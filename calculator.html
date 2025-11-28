@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIIT SGPA & CGPA Calculator</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#1e293b', // Custom dark slate
+                            900: '#0f172a', // Base bg
+                        },
+                        violet: { 500: '#8b5cf6', 600: '#7c3aed' },
+                        green: { 500: '#22c55e', 600: '#16a34a' },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0f172a; color: #f1f5f9; }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- Constants ---
+        const GRADES = [
+            { label: 'O', points: 10, desc: 'Outstanding', range: '90-100' },
+            { label: 'E', points: 9, desc: 'Excellent', range: '80-89' },
+            { label: 'A', points: 8, desc: 'Very Good', range: '70-79' },
+            { label: 'B', points: 7, desc: 'Good', range: '60-69' },
+            { label: 'C', points: 6, desc: 'Fair', range: '50-59' },
+            { label: 'D', points: 5, desc: 'Below Average', range: '40-49' },
+            { label: 'F', points: 2, desc: 'Failed', range: 'Below 40' },
+        ];
+
+        // --- Components ---
+
+        const Navbar = ({ onScrollToInfo }) => (
+            <nav className="fixed w-full z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 transition-all duration-300">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between h-16 items-center">
+                        <div className="flex items-center gap-2">
+                            <a href="index.html" className="flex items-center gap-2 group">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-green-500 flex items-center justify-center text-white font-bold shadow-lg group-hover:scale-105 transition-transform">
+                                    K
+                                </div>
+                                <span className="font-bold text-lg tracking-tight text-slate-100">
+                                    KIIT <span className="text-violet-400">Calculator</span>
+                                </span>
+                            </a>
+                        </div>
+                        <button 
+                            onClick={onScrollToInfo}
+                            className="text-sm font-medium text-slate-400 hover:text-violet-400 transition-colors"
+                        >
+                            Grading System
+                        </button>
+                    </div>
+                </div>
+            </nav>
+        );
+
+        const Hero = ({ activeTab, setActiveTab }) => (
+            <div className="pt-32 pb-12 text-center px-4">
+                <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4 text-white">
+                    KIIT <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-green-400">SGPA & CGPA</span> Calculator
+                </h1>
+                <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-10">
+                    Calculate your semester SGPA and overall CGPA based on KIIT’s 10-point, 7-grade system (O, E, A, B, C, D, F).
+                </p>
+                
+                <div className="flex justify-center gap-4">
+                    <button 
+                        onClick={() => setActiveTab('sgpa')}
+                        className={`px-8 py-3 rounded-full font-bold text-sm transition-all duration-300 transform hover:-translate-y-1 ${
+                            activeTab === 'sgpa' 
+                            ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-lg shadow-violet-500/25' 
+                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+                        }`}
+                    >
+                        SGPA Calculator
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('cgpa')}
+                        className={`px-8 py-3 rounded-full font-bold text-sm transition-all duration-300 transform hover:-translate-y-1 ${
+                            activeTab === 'cgpa' 
+                            ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg shadow-green-500/25' 
+                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+                        }`}
+                    >
+                        CGPA Calculator
+                    </button>
+                </div>
+            </div>
+        );
+
+        const SgpaCard = () => {
+            const [numSubjects, setNumSubjects] = useState(5);
+            const [subjects, setSubjects] = useState([]);
+            const [result, setResult] = useState(null);
+
+            // Initialize subjects when numSubjects changes
+            useEffect(() => {
+                const newSubjects = Array(numSubjects).fill(null).map((_, i) => ({
+                    id: i + 1,
+                    name: '',
+                    credit: 3, // Default credit
+                    grade: 10  // Default 'O'
+                }));
+                // Preserve existing data if increasing count
+                if (subjects.length > 0) {
+                    const preserved = newSubjects.map((s, i) => subjects[i] || s);
+                    setSubjects(preserved);
+                } else {
+                    setSubjects(newSubjects);
+                }
+            }, [numSubjects]);
+
+            const updateSubject = (index, field, value) => {
+                const updated = [...subjects];
+                updated[index][field] = value;
+                setSubjects(updated);
+            };
+
+            const calculateSgpa = () => {
+                let totalCredits = 0;
+                let totalPoints = 0;
+                
+                subjects.forEach(sub => {
+                    const credit = parseFloat(sub.credit);
+                    const gradePoint = parseFloat(sub.grade);
+                    if (!isNaN(credit) && !isNaN(gradePoint)) {
+                        totalCredits += credit;
+                        totalPoints += (credit * gradePoint);
+                    }
+                });
+
+                if (totalCredits === 0) return;
+
+                const sgpa = (totalPoints / totalCredits).toFixed(2);
+                setResult({
+                    sgpa,
+                    credits: totalCredits,
+                    ci: totalPoints
+                });
+            };
+
+            const getRemark = (sgpa) => {
+                if (sgpa >= 9) return { text: "Excellent 🎉", color: "text-green-400" };
+                if (sgpa >= 8) return { text: "Very Good 🌟", color: "text-violet-400" };
+                if (sgpa >= 7) return { text: "Good job, keep going 💪", color: "text-blue-400" };
+                return { text: "You can always improve next semester 🙂", color: "text-slate-400" };
+            };
+
+            return (
+                <div className="glass-card rounded-2xl p-6 md:p-8 animate-fade-in">
+                    <h2 className="text-2xl font-bold text-white mb-2">Semester SGPA Calculator</h2>
+                    <p className="text-slate-400 text-sm mb-6">Enter your credits and grades for each subject.</p>
+
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Number of Subjects</label>
+                        <input 
+                            type="number" 
+                            min="1" max="15"
+                            value={numSubjects}
+                            onChange={(e) => {
+                                const val = parseInt(e.target.value) || 1;
+                                setNumSubjects(Math.min(Math.max(val, 1), 15));
+                            }}
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all"
+                        />
+                    </div>
+
+                    <div className="overflow-x-auto mb-6">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="border-b border-slate-700 text-slate-400 text-xs uppercase">
+                                    <th className="py-3 px-2">#</th>
+                                    <th className="py-3 px-2">Subject (Optional)</th>
+                                    <th className="py-3 px-2 w-24">Credits</th>
+                                    <th className="py-3 px-2 w-32">Grade</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-sm">
+                                {subjects.map((sub, idx) => (
+                                    <tr key={idx} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
+                                        <td className="py-3 px-2 text-slate-500">{idx + 1}</td>
+                                        <td className="py-3 px-2">
+                                            <input 
+                                                type="text" 
+                                                placeholder={`Subject ${idx + 1}`}
+                                                value={sub.name}
+                                                onChange={(e) => updateSubject(idx, 'name', e.target.value)}
+                                                className="w-full bg-transparent border-none focus:ring-0 text-white placeholder-slate-600 p-0"
+                                            />
+                                        </td>
+                                        <td className="py-3 px-2">
+                                            <input 
+                                                type="number" 
+                                                step="0.5" min="1"
+                                                value={sub.credit}
+                                                onChange={(e) => updateSubject(idx, 'credit', e.target.value)}
+                                                className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white focus:border-violet-500 outline-none"
+                                            />
+                                        </td>
+                                        <td className="py-3 px-2">
+                                            <select 
+                                                value={sub.grade}
+                                                onChange={(e) => updateSubject(idx, 'grade', e.target.value)}
+                                                className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white focus:border-violet-500 outline-none"
+                                            >
+                                                {GRADES.map(g => (
+                                                    <option key={g.label} value={g.points}>{g.label} ({g.points})</option>
+                                                ))}
+                                            </select>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <button 
+                        onClick={calculateSgpa}
+                        className="w-full bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 text-white font-bold py-3 rounded-xl shadow-lg shadow-violet-500/20 transition-all transform hover:-translate-y-0.5"
+                    >
+                        Calculate SGPA
+                    </button>
+
+                    {result && (
+                        <div className="mt-8 p-6 bg-slate-900 rounded-xl border border-slate-800 text-center animate-fade-in-up">
+                            <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Your Semester SGPA</div>
+                            <div className="text-5xl font-extrabold text-white mb-2">{result.sgpa}</div>
+                            <div className={`text-sm font-medium mb-4 ${getRemark(result.sgpa).color}`}>
+                                {getRemark(result.sgpa).text}
+                            </div>
+                            <div className="flex justify-center gap-8 text-xs text-slate-500 border-t border-slate-800 pt-4">
+                                <div>Total Credits: <span className="text-slate-300">{result.credits}</span></div>
+                                <div>Credit Index: <span className="text-slate-300">{result.ci}</span></div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const CgpaCard = () => {
+            const [numSems, setNumSems] = useState(2);
+            const [sems, setSems] = useState([]);
+            const [result, setResult] = useState(null);
+
+            useEffect(() => {
+                const newSems = Array(numSems).fill(null).map((_, i) => ({
+                    id: i + 1,
+                    sgpa: '',
+                    credit: ''
+                }));
+                if (sems.length > 0) {
+                    const preserved = newSems.map((s, i) => sems[i] || s);
+                    setSems(preserved);
+                } else {
+                    setSems(newSems);
+                }
+            }, [numSems]);
+
+            const updateSem = (index, field, value) => {
+                const updated = [...sems];
+                updated[index][field] = value;
+                setSems(updated);
+            };
+
+            const calculateCgpa = () => {
+                let totalCredits = 0;
+                let totalPoints = 0;
+                let valid = true;
+
+                sems.forEach(s => {
+                    const sgpa = parseFloat(s.sgpa);
+                    const credit = parseFloat(s.credit);
+                    if (!isNaN(sgpa) && !isNaN(credit)) {
+                        totalCredits += credit;
+                        totalPoints += (credit * sgpa);
+                    } else if (s.sgpa !== '' || s.credit !== '') {
+                        valid = false; // Partial data entered
+                    }
+                });
+
+                if (totalCredits === 0) return;
+
+                const cgpa = (totalPoints / totalCredits).toFixed(2);
+                setResult({ cgpa, credits: totalCredits });
+            };
+
+            return (
+                <div className="glass-card rounded-2xl p-6 md:p-8 animate-fade-in">
+                    <h2 className="text-2xl font-bold text-white mb-2">Overall CGPA Calculator</h2>
+                    <p className="text-slate-400 text-sm mb-6">Calculate cumulative GPA across semesters.</p>
+
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Semesters Completed</label>
+                        <select 
+                            value={numSems}
+                            onChange={(e) => setNumSems(parseInt(e.target.value))}
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                        >
+                            {[1,2,3,4,5,6,7,8,9,10].map(n => (
+                                <option key={n} value={n}>{n} Semesters</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="space-y-3 mb-6">
+                        {sems.map((sem, idx) => (
+                            <div key={idx} className="grid grid-cols-12 gap-3 items-center">
+                                <div className="col-span-2 text-sm text-slate-400 font-medium">Sem {idx + 1}</div>
+                                <div className="col-span-5">
+                                    <input 
+                                        type="number" 
+                                        placeholder="SGPA"
+                                        step="0.01" min="0" max="10"
+                                        value={sem.sgpa}
+                                        onChange={(e) => updateSem(idx, 'sgpa', e.target.value)}
+                                        className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-white text-sm focus:border-green-500 outline-none"
+                                    />
+                                </div>
+                                <div className="col-span-5">
+                                    <input 
+                                        type="number" 
+                                        placeholder="Credits"
+                                        min="1"
+                                        value={sem.credit}
+                                        onChange={(e) => updateSem(idx, 'credit', e.target.value)}
+                                        className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-white text-sm focus:border-green-500 outline-none"
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <button 
+                        onClick={calculateCgpa}
+                        className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white font-bold py-3 rounded-xl shadow-lg shadow-green-500/20 transition-all transform hover:-translate-y-0.5"
+                    >
+                        Calculate CGPA
+                    </button>
+
+                    {result && (
+                        <div className="mt-8 p-6 bg-slate-900 rounded-xl border border-slate-800 text-center animate-fade-in-up">
+                            <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Your Overall CGPA</div>
+                            <div className="text-5xl font-extrabold text-white mb-2">{result.cgpa}</div>
+                            <div className="text-sm font-medium text-green-400 mb-4">
+                                {result.cgpa >= 9 ? "Outstanding Performance! 🏆" : result.cgpa >= 8 ? "Excellent Work! 🌟" : "Keep Pushing! 🚀"}
+                            </div>
+                            <div className="text-xs text-slate-500 border-t border-slate-800 pt-4">
+                                Total Credits Earned: <span className="text-slate-300">{result.credits}</span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const GradingInfo = ({ innerRef }) => (
+            <div ref={innerRef} className="mt-20 pt-10 border-t border-slate-800">
+                <h3 className="text-2xl font-bold text-white mb-8 text-center">KIIT 10-Point Grading System</h3>
+                <div className="overflow-hidden rounded-xl border border-slate-700 shadow-lg">
+                    <table className="w-full text-left border-collapse bg-slate-800/50">
+                        <thead className="bg-slate-900 text-slate-400 text-xs uppercase">
+                            <tr>
+                                <th className="p-4">Grade</th>
+                                <th className="p-4">Description</th>
+                                <th className="p-4">Points</th>
+                                <th className="p-4">Range</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-slate-300 text-sm divide-y divide-slate-700">
+                            {GRADES.map((g) => (
+                                <tr key={g.label} className="hover:bg-slate-800 transition-colors">
+                                    <td className="p-4 font-bold text-white">{g.label}</td>
+                                    <td className="p-4">{g.desc}</td>
+                                    <td className="p-4">{g.points}</td>
+                                    <td className="p-4 font-mono text-slate-400">{g.range}%</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                <div className="mt-8 grid md:grid-cols-2 gap-6 text-sm text-slate-400">
+                    <div className="bg-slate-900 p-4 rounded-lg border border-slate-800">
+                        <strong className="text-violet-400 block mb-2">SGPA Formula</strong>
+                        (Sum of Credit Points in a semester) ÷ (Total Credits in that semester)
+                    </div>
+                    <div className="bg-slate-900 p-4 rounded-lg border border-slate-800">
+                        <strong className="text-green-400 block mb-2">CGPA Formula</strong>
+                        (Sum of Credit Points of all completed semesters) ÷ (Total Credits of all completed semesters)
+                    </div>
+                </div>
+            </div>
+        );
+
+        const Footer = () => (
+            <footer className="mt-20 py-8 text-center text-slate-600 text-sm border-t border-slate-800">
+                <p>&copy; 2024 KIIT Student Support. Built for students, by students.</p>
+            </footer>
+        );
+
+        const KiitGpaCalculator = () => {
+            const [activeTab, setActiveTab] = useState('sgpa');
+            const infoRef = useRef(null);
+
+            const scrollToInfo = () => {
+                infoRef.current?.scrollIntoView({ behavior: 'smooth' });
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col">
+                    <Navbar onScrollToInfo={scrollToInfo} />
+                    
+                    <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+                        <Hero activeTab={activeTab} setActiveTab={setActiveTab} />
+                        
+                        <div className="grid md:grid-cols-2 gap-8 items-start">
+                            <div className={`${activeTab === 'sgpa' ? 'block' : 'hidden md:block'}`}>
+                                <SgpaCard />
+                            </div>
+                            <div className={`${activeTab === 'cgpa' ? 'block' : 'hidden md:block'}`}>
+                                <CgpaCard />
+                            </div>
+                        </div>
+
+                        <GradingInfo innerRef={infoRef} />
+                    </main>
+
+                    <Footer />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<KiitGpaCalculator />);
+    </script>
+</body>
+</html>
